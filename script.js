@@ -714,8 +714,8 @@ function iniciar3D() {
   }
 
   cena = new THREE.Scene();
-  cena.background = new THREE.Color(0x9bb8c3);
-  cena.fog = new THREE.Fog(0x9bb8c3, 35, 80);
+  cena.background = new THREE.Color(0x8eb7d2);
+  cena.fog = new THREE.Fog(0x8eb7d2, 42, 92);
 
   camera = new THREE.PerspectiveCamera(
     48, container.clientWidth / container.clientHeight, 0.1, 200
@@ -733,7 +733,7 @@ function iniciar3D() {
   const luzAmbiente = new THREE.HemisphereLight(0xe7f4ff, 0x4b5935, 1.5);
   cena.add(luzAmbiente);
 
-  const sol = new THREE.DirectionalLight(0xfff1d1, 2);
+  const sol = new THREE.DirectionalLight(0xfff1d1, 1.25);
   sol.position.set(-15, 30, 15);
   sol.castShadow = true;
   cena.add(sol);
@@ -778,7 +778,7 @@ function adicionarCaixa(x, y, z, largura, altura, profundidade, cor, grupo = cen
 function criarTerreno() {
   const terreno = new THREE.Mesh(
     new THREE.PlaneGeometry(52, 52),
-    material(0x638b48)
+    material(0x4f8c43)
   );
   terreno.rotation.x = -Math.PI / 2;
   terreno.position.y = -0.03;
@@ -789,7 +789,7 @@ function criarTerreno() {
     for (let z = -24; z <= 24; z += 4) {
       const detalhe = new THREE.Mesh(
         new THREE.CircleGeometry(0.13 + Math.random() * 0.12, 6),
-        material(Math.random() > 0.5 ? 0x789d55 : 0x507a3c)
+        material(Math.random() > 0.5 ? 0x6c9c4e : 0x47763b)
       );
       detalhe.rotation.x = -Math.PI / 2;
       detalhe.position.set(x + Math.random() * 1.5, 0.01, z + Math.random() * 1.5);
