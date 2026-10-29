@@ -1,0 +1,230 @@
+:root {
+  --fundo: #101611;
+  --painel: #1a241c;
+  --painel2: #222e24;
+  --borda: #39483a;
+  --laranja: #f28a27;
+  --laranja-claro: #ffb34d;
+  --texto: #f2f1e8;
+  --suave: #aab5a7;
+  --verde: #6eaa61;
+  --vermelho: #df6654;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--texto);
+  background: var(--fundo);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+button { font: inherit; }
+
+.topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 5%;
+  background: #172019;
+  border-bottom: 1px solid var(--borda);
+}
+
+.marca { display: flex; align-items: center; gap: 12px; }
+
+.simbolo {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #201509;
+  background: var(--laranja);
+  font-size: 27px;
+}
+
+.marca h1 { margin: 0; font-size: 17px; letter-spacing: 1px; }
+.marca small { display: block; margin-top: 5px; color: var(--suave); }
+
+.recursos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.recurso {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 105px;
+  padding: 9px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: var(--painel);
+}
+
+.recurso > span { font-size: 23px; }
+.recurso small, .mini-card small { display: block; color: var(--suave); font-size: 10px; letter-spacing: 1px; }
+.recurso strong { display: block; margin-top: 4px; font-size: 15px; }
+
+.navegacao {
+  display: flex;
+  gap: 8px;
+  padding: 12px 5%;
+  overflow-x: auto;
+  background: #141b15;
+  border-bottom: 1px solid var(--borda);
+}
+
+.nav-btn {
+  flex-shrink: 0;
+  padding: 12px 17px;
+  color: var(--suave);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.nav-btn:hover, .nav-btn.ativo {
+  color: white;
+  background: var(--painel2);
+  border-color: var(--borda);
+}
+
+.nav-btn.batalha-nav { color: var(--laranja-claro); }
+.nav-btn.batalha-nav.ativo { background: #4a2b13; border-color: var(--laranja); }
+
+main { width: min(1200px, 92%); margin: 28px auto 50px; }
+.tela { display: none; }
+.tela.ativa { display: block; animation: aparecer .2s ease; }
+
+@keyframes aparecer {
+  from { opacity: .3; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cabecalho-secao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+h2 { margin: 4px 0 8px; font-size: clamp(25px, 4vw, 34px); }
+h3 { margin: 5px 0 12px; font-size: 19px; }
+p { line-height: 1.5; }
+.sobretitulo { margin: 0; color: var(--laranja-claro); font-size: 10px; font-weight: bold; letter-spacing: 2px; }
+.descricao { margin: 0; color: var(--suave); font-size: 14px; }
+.selo-nivel { padding: 12px 16px; color: var(--laranja-claro); border: 1px solid #79502d; border-radius: 10px; background: #332517; white-space: nowrap; }
+.selo-nivel strong { margin-left: 5px; font-size: 20px; }
+
+.painel-jogo {
+  overflow: hidden;
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+  background: #263d2b;
+}
+
+#jogo3d { position: relative; width: 100%; height: min(62vw, 520px); min-height: 300px; }
+#jogo3d canvas { display: block; width: 100%; height: 100%; touch-action: pan-y; }
+.carregando { position: absolute; z-index: 1; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; }
+.dica-camera { padding: 10px; color: var(--suave); text-align: center; font-size: 12px; background: #172019; }
+
+.resumo-vila { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0 30px; }
+.mini-card { display: flex; align-items: center; gap: 12px; padding: 17px; background: var(--painel); border: 1px solid var(--borda); border-radius: 11px; }
+.mini-card > span { font-size: 27px; }
+.mini-card strong { display: block; margin-top: 5px; }
+
+.bloco { margin: 18px 0; padding: 22px; background: var(--painel); border: 1px solid var(--borda); border-radius: 13px; }
+.titulo-bloco { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 15px; }
+.etiqueta { padding: 6px 9px; color: var(--laranja-claro); background: #332517; border-radius: 5px; font-size: 10px; }
+
+.lista-construcoes, .lista-tropas, .lista-missoes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+
+.construcao, .tropa-card, .missao {
+  padding: 17px;
+  background: var(--painel2);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+}
+
+.construcao-topo { display: flex; gap: 11px; align-items: center; }
+.icone-construcao { font-size: 29px; }
+.construcao h4, .tropa-card h4, .missao h4 { margin: 0 0 5px; font-size: 15px; }
+.construcao p, .tropa-card p, .missao p { margin: 4px 0; color: var(--suave); font-size: 12px; }
+.detalhe-custo { margin: 13px 0; color: var(--laranja-claro); font-size: 12px; }
+.botao-principal, .botao-secundario, .botao-pequeno {
+  display: inline-block;
+  padding: 12px 16px;
+  color: #211609;
+  background: var(--laranja);
+  border: 0;
+  border-radius: 7px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: .15s;
+}
+.botao-principal:hover, .botao-secundario:hover, .botao-pequeno:hover { filter: brightness(1.12); transform: translateY(-1px); }
+.botao-principal:disabled, .botao-pequeno:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+.botao-secundario { color: var(--texto); background: #38493a; }
+.botao-pequeno { padding: 9px 11px; font-size: 12px; }
+.barra-progresso { height: 6px; margin: 10px 0; overflow: hidden; background: #111711; border-radius: 99px; }
+.barra-progresso span { display: block; height: 100%; background: var(--verde); }
+
+.painel-estrelas { margin: 20px 0; padding: 23px; border: 1px solid #78532d; border-radius: 13px; background: linear-gradient(135deg, #352817, #211e17); }
+.regras-estrelas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 17px; }
+.regras-estrelas > div { display: flex; flex-direction: column; gap: 7px; padding: 14px; background: #171b15; border: 1px solid #51402b; border-radius: 9px; }
+.regras-estrelas span { font-size: 28px; color: #ffca45; }
+.regras-estrelas strong { font-size: 13px; }
+.regras-estrelas small { color: var(--suave); line-height: 1.4; }
+
+.alvo-info { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 0; }
+.alvo-info > div { padding: 14px; background: var(--painel2); border-radius: 8px; }
+.alvo-info small { display: block; color: var(--suave); margin-bottom: 8px; }
+.alvo-info strong { font-size: 14px; }
+.aviso { padding: 12px; color: #e9d3a5; background: #342c1c; border-radius: 8px; font-size: 12px; }
+.resultado { border-color: var(--laranja); }
+.estrelas-resultado { color: #ffca45; font-size: 34px; letter-spacing: 5px; }
+
+.missao { display: flex; flex-direction: column; gap: 8px; }
+.missao button { margin-top: auto; align-self: flex-start; }
+.missao.concluida { border-color: var(--verde); }
+.loja-trabalhador { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--borda); }
+.loja-trabalhador:last-child { border-bottom: 0; }
+
+.notificacao { position: fixed; z-index: 20; right: 20px; bottom: 20px; max-width: 340px; padding: 14px 18px; color: white; background: #2d402e; border: 1px solid #6b8b62; border-radius: 10px; opacity: 0; pointer-events: none; transform: translateY(10px); transition: .2s; }
+.notificacao.visivel { opacity: 1; transform: translateY(0); }
+
+footer { padding: 25px; color: var(--suave); text-align: center; border-top: 1px solid var(--borda); font-size: 12px; }
+
+@media (max-width: 850px) {
+  .topo { align-items: flex-start; flex-direction: column; padding: 15px 4%; }
+  .recursos { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .recurso { min-width: 0; }
+  .navegacao { padding: 10px 4%; }
+  main { width: 94%; margin-top: 20px; }
+}
+
+@media (max-width: 560px) {
+  .marca h1 { font-size: 14px; }
+  .marca small { font-size: 11px; }
+  .recurso { padding: 9px; }
+  .recurso > span { font-size: 20px; }
+  .recurso strong { font-size: 14px; }
+  .nav-btn { padding: 11px 12px; font-size: 11px; }
+  .resumo-vila { grid-template-columns: 1fr; gap: 8px; }
+  .mini-card { padding: 12px; }
+  .lista-construcoes, .lista-tropas, .lista-missoes { grid-template-columns: 1fr; }
+  .regras-estrelas { grid-template-columns: 1fr; }
+  .cabecalho-secao { align-items: flex-start; }
+  .selo-nivel { padding: 10px; font-size: 12px; }
+  #jogo3d { height: 360px; }
+  .bloco { padding: 16px; }
+  .alvo-info { grid-template-columns: 1fr; }
+  .titulo-bloco { align-items: flex-start; flex-direction: column; }
+}
