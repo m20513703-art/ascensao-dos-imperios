@@ -72,6 +72,11 @@ let estado = carregarEstado();
 let cena, camera, renderizador, controles;
 let objetosVila = [];
 let avisoTimer;
+let selecaoAtaque = {};
+const erasFortaleza = [
+  ["Aldeia do Despertar", "O primeiro estandarte foi fincado."], ["Vigília de Pedra", "Muralhas e coletores entram no ritmo."], ["Bosque das Trilhas", "O Centro de Evolução desperta."], ["Forja do Crepúsculo", "Catapultas e relíquias chegam ao reino."], ["Coroa de Cinzas", "Novas fronteiras aguardam exploração."]
+];
+const heroiBase = { nome: "Aruan, o Leão-Guardião", icone: "🦁", nivel: 1, xp: 0, habilidade: "Rugido de Brasa" };
 
 function carregarEstado() {
   try {
@@ -87,7 +92,9 @@ function carregarEstado() {
       construcoes: { ...base.construcoes, ...(recebido.construcoes || {}) },
       tropas: { ...base.tropas, ...(recebido.tropas || {}) },
       evolucoes: recebido.evolucoes || {},
-      missoesReclamadas: recebido.missoesReclamadas || []
+      missoesReclamadas: recebido.missoesReclamadas || [],
+      heroi: { ...heroiBase, ...(recebido.heroi || {}) },
+      selecaoAtaque: recebido.selecaoAtaque || {}
     };
   } catch (erro) {
     console.error("Não foi possível carregar o salvamento:", erro);
@@ -219,9 +226,9 @@ function custoMelhoria(id, nivelAtual) {
 
   if (id === "fortaleza") {
     custo = {
-      ouro: nivelAtual === 1 ? 1000 : 3000 * nivelAtual,
-      elixir: nivelAtual === 1 ? 1000 : 2500 * nivelAtual,
-      tempo: nivelAtual === 1 ? 120 : 1800 * nivelAtual
+      ouro: nivelAtual === 1 ? 1000 : Math.floor(3000 * Math.pow(nivelAtual, 1.45)),
+      elixir: nivelAtual === 1 ? 1000 : Math.floor(2500 * Math.pow(nivelAtual, 1.4)),
+      tempo: nivelAtual === 1 ? 120 : Math.floor(Math.min(86400, 900 * Math.pow(nivelAtual, 1.55)))
     };
   }
 
@@ -242,15 +249,10 @@ function iniciarMelhoria(id) {
     return notificar("Todos os trabalhadores estão ocupados.");
   }
 
-  const maximo = id === "fortaleza" ? 4 : 4;
-  if (atual.nivel >= maximo) return notificar("Essa construção já atingiu o nível 4.");
-
-  if (id === "fortaleza" && atual.nivel >= 4) {
-    return notificar("Você já alcançou a Fortaleza 4.");
-  }
+  const maximo = id === "fortaleza" ? 18 : 4;
+  if (atual.nivel >= maximo) return notificar(id === "fortaleza" ? "Você alcançou o marco máximo planejado: Fortaleza 18." : "Essa construção já atingiu o nível máximo desta etapa.");
 
   const proximoNivel = atual.nivel + 1;
-  if (id === "fortaleza" && proximoNivel > 4) return;
 
   const custo = custoMelhoria(id, atual.nivel);
 
@@ -354,6 +356,31 @@ function coletarRecursos() {
   notificar(`Você recebeu ${formatar(ouro)} ouro e ${formatar(elixir)} elixir.`);
 }
 
+function montarProgresso() {
+  const painel = document.getElementById("painelProgresso");
+  if (!painel) return;
+  const atual = Math.max(1, Math.min(18, estado.fortaleza));
+  const era = erasFortaleza[Math.min(erasFortaleza.length - 1, Math.floor((atual - 1) / 4))];
+  painel.innerHTML = `<div class="era-head"><div><p class="sobretitulo">MAPA DE ASCENSÃO</p><h3>${era[0]}</h3></div><strong>FORTALEZA ${atual}/18</strong></div><div class="era-track">${Array.from({length:18},(_,i)=>`<span class="era-step ${i+1<atual?'conquistado ':''}${i+1===atual?'atual':''}" title="Fortaleza ${i+1}">${i+1}</span>`).join('')}</div><p class="era-note">${era[1]} Próxima era: <strong>${atual < 18 ? `Fortaleza ${atual + 1}` : 'coroa máxima'}</strong>. Os marcos acima são a trilha planejada de progressão.</p>`;
+}
+
+function montarHeroi() {
+  const painel = document.getElementById("painelHeroi");
+  if (!painel) return;
+  const h = estado.heroi || heroiBase;
+  const xpProx = h.nivel * 100;
+  painel.innerHTML = `<article class="heroi-card"><div class="heroi-portrait">${h.icone}</div><div><p class="sobretitulo">CAMPEÃO NÍVEL ${h.nivel}</p><h3>${h.nome}</h3><p class="descricao">Um líder original que cresce com as expedições do seu reino.</p><div class="hero-stat"><span>Experiência</span><strong>${h.xp} / ${xpProx} XP</strong></div><div class="barra-progresso"><span style="width:${Math.min(100, h.xp / xpProx * 100)}%"></span></div><div class="hero-stat"><span>Habilidade</span><strong>${h.habilidade}</strong></div><div class="equip-slot"><span>🔥</span><div><strong>Medalhão da Aurora</strong><small>Relíquia inicial • +8% poder do herói</small></div></div><div class="equip-slot"><span>🛡️</span><div><strong>Couraça do Vale</strong><small>🔒 Desbloqueia no Centro de Evolução nível 2</small></div></div><div class="bonus-unlock">Próximo marco: <strong>${estado.fortaleza >= 3 ? 'equipamentos ativos' : 'Fortaleza 3'}</strong>. Login e nuvem serão adicionados apenas com backend seguro; este protótipo salva no navegador.</div></div></article>`;
+}
+
+function montarSelecaoAtaque() {
+  const el = document.getElementById("selecaoAtaque");
+  if (!el) return;
+  const ids = Object.entries(estado.tropas).filter(([id,q]) => q > 0);
+  if (!ids.length) { el.innerHTML = '<p class="descricao">Treine tropas no Exército para formar um destacamento.</p>'; return; }
+  el.innerHTML = ids.map(([id,q]) => { const t=tropasDados[id]; const valor=Math.min(q, Number(selecaoAtaque[id] || 0)); return `<label class="selecao-unidade"><span class="unit-emoji">${t.icone}</span><span class="unit-info"><strong>${t.nome}</strong><small>${q} disponíveis • ${t.espacos} espaço(s)</small></span><input type="number" min="0" max="${q}" value="${valor}" data-selecao="${id}"></label>`; }).join('');
+  el.querySelectorAll('[data-selecao]').forEach(input => input.addEventListener('input', () => { selecaoAtaque[input.dataset.selecao] = Math.max(0, Math.min(Number(input.max), Number(input.value) || 0)); const n=Object.values(selecaoAtaque).reduce((a,b)=>a+b,0); document.getElementById('resumoAtaque').textContent = n ? `${n} unidade(s) no destacamento.` : 'Escolha unidades para formar seu destacamento.'; }));
+}
+
 function atualizarRecursos() {
   document.getElementById("ouro").textContent = formatar(estado.ouro);
   document.getElementById("elixir").textContent = formatar(estado.elixir);
@@ -398,7 +425,7 @@ function montarListaConstrucoes() {
 
     if (atual) {
       const ocupado = atual.termina > Date.now();
-      const maximo = 4;
+      const maximo = id === "fortaleza" ? 18 : 4;
       const custo = custoMelhoria(id, atual.nivel);
 
       lista.innerHTML += `
@@ -417,7 +444,7 @@ function montarListaConstrucoes() {
             <div class="detalhe-custo">🪙 ${formatar(custo.ouro)} • 🧪 ${formatar(custo.elixir)} • ⏱️ ${formatar(custo.tempo)}s</div>
             ${atual.nivel < maximo
               ? htmlBotao("Melhorar", `melhorar:${id}`, false)
-              : "<p>Nível máximo da primeira versão.</p>"}
+              : `<p>${id === "fortaleza" ? "Coroa máxima do plano atual." : "Nível máximo desta construção."}</p>`}
           `}
         </article>`;
     } else {
@@ -571,6 +598,9 @@ function contratarTrabalhador(indice) {
 
 function atualizarTudo() {
   atualizarRecursos();
+  montarProgresso();
+  montarSelecaoAtaque();
+  montarHeroi();
   montarListaConstrucoes();
   montarListaTropas();
   montarMissoes();
@@ -612,65 +642,25 @@ document.addEventListener("click", evento => {
 document.getElementById("btnAtacar").addEventListener("click", iniciarBatalha);
 
 function iniciarBatalha() {
-  const total = totalTropas();
-
-  if (total <= 0) return notificar("Treine tropas antes de atacar.");
-
-  const disponiveis = Object.entries(estado.tropas).filter(([id, qtd]) => qtd > 0);
-  const nomes = disponiveis.map(([id, qtd]) => `${tropasDados[id].nome}: ${qtd}`).join("\n");
-
-  const resposta = prompt(
-    `Escolha quantas tropas enviar para a batalha.\nVocê tem ${total} tropas.\nDigite um número entre 1 e ${total}.\n\nSeu exército:\n${nomes}`,
-    String(Math.min(10, total))
-  );
-
-  if (resposta === null) return;
-
-  const quantidade = Number(resposta);
-  if (!Number.isInteger(quantidade) || quantidade < 1 || quantidade > total) {
-    return notificar("Quantidade de tropas inválida.");
-  }
-
-  const poder = calcularPoderTropas(quantidade);
-  const variacao = Math.floor(Math.random() * 26);
-  const destruicao = Math.min(100, Math.max(0, Math.floor(poder + variacao)));
+  const enviados = Object.entries(selecaoAtaque).filter(([id,q]) => q > 0 && estado.tropas[id] >= q);
+  const quantidade = enviados.reduce((n,[,q]) => n + q, 0);
+  if (!quantidade) return notificar("Escolha pelo menos uma unidade para a expedição.");
+  enviados.forEach(([id,q]) => { estado.tropas[id] -= q; });
+  const poder = enviados.reduce((total,[id,q]) => { const t=tropasDados[id]; return total + q * (t.dano + t.vida / 20); }, 0);
+  const variacao = Math.floor(Math.random() * 21) - 10;
+  const destruicao = Math.min(100, Math.max(0, Math.floor(poder * 1.35 + variacao)));
   const fortalezaDestruida = destruicao >= 70;
-  const estrelas = (destruicao >= 50 ? 1 : 0) +
-    (fortalezaDestruida ? 1 : 0) +
-    (destruicao >= 100 ? 1 : 0);
-
-  const ouroGanho = Math.floor(300 * destruicao / 100);
-  const elixirGanho = Math.floor(300 * destruicao / 100);
-  const diamantesGanho = estrelas === 3 ? 10 : estrelas === 2 ? 5 : 0;
-
-  estado.ouro += ouroGanho;
-  estado.elixir += elixirGanho;
-  estado.diamantes += diamantesGanho;
-  estado.batalhas++;
+  const estrelas = (destruicao >= 50 ? 1 : 0) + (fortalezaDestruida ? 1 : 0) + (destruicao >= 100 ? 1 : 0);
+  const ouroGanho = Math.floor(380 * destruicao / 100), elixirGanho = Math.floor(320 * destruicao / 100), diamantesGanho = estrelas === 3 ? 10 : estrelas === 2 ? 5 : 0;
+  estado.ouro += ouroGanho; estado.elixir += elixirGanho; estado.diamantes += diamantesGanho; estado.batalhas++;
   if (estrelas >= 1) estado.vitorias++;
-
-  estado.ultimaBatalha =
-    `Vila da Fronteira: ${destruicao}% destruída • ${estrelas} estrela(s) • +${ouroGanho} ouro • +${elixirGanho} elixir`;
-
-  const resultado = document.getElementById("resultadoBatalha");
-  resultado.hidden = false;
-  resultado.innerHTML = `
-    <p class="sobretitulo">RESULTADO DO ATAQUE</p>
-    <h3>${estrelas === 3 ? "🏆 Vitória perfeita!" : estrelas > 0 ? "⚔️ Bom ataque!" : "🛡️ Ataque sem estrelas"}</h3>
-    <div class="estrelas-resultado">${"★".repeat(estrelas)}${"☆".repeat(3 - estrelas)}</div>
-    <h2>${destruicao}% destruído</h2>
-    <div class="barra-progresso"><span style="width:${destruicao}%"></span></div>
-    <p>${destruicao >= 50 ? "⭐ Primeira estrela: 50% atingido." : "A primeira estrela exige 50% de destruição."}</p>
-    <p>${fortalezaDestruida ? "⭐ Segunda estrela: fortaleza destruída." : "A fortaleza inimiga resistiu ao ataque."}</p>
-    <p>${destruicao >= 100 ? "⭐ Terceira estrela: vila completamente destruída." : "A terceira estrela exige 100% de destruição."}</p>
-    <p>Recompensas: 🪙 ${formatar(ouroGanho)} ouro • 🧪 ${formatar(elixirGanho)} elixir • 💎 ${diamantesGanho} diamantes</p>
-    <p class="aviso">Demonstração inicial: o resultado é simulado e não representa ainda o combate completo em tempo real.</p>
-  `;
-
-  salvar();
-  atualizarTudo();
-  notificar(`Batalha concluída: ${estrelas} estrela(s).`);
-  trocarTela("batalha");
+  estado.heroi = estado.heroi || { ...heroiBase }; estado.heroi.xp += estrelas * 24 + Math.floor(destruicao / 10);
+  if (estado.heroi.xp >= estado.heroi.nivel * 100) { estado.heroi.xp -= estado.heroi.nivel * 100; estado.heroi.nivel++; notificar("Aruan subiu de nível!"); }
+  estado.ultimaBatalha = `Posto da Fronteira: ${destruicao}% destruído • ${estrelas} estrela(s) • +${ouroGanho} ouro • +${elixirGanho} elixir`;
+  selecaoAtaque = {};
+  const resultado = document.getElementById("resultadoBatalha"); resultado.hidden = false;
+  resultado.innerHTML = `<p class="sobretitulo">RELATÓRIO DA EXPEDIÇÃO</p><h3>${estrelas === 3 ? "🏆 Vitória perfeita!" : estrelas > 0 ? "⚔️ Território conquistado!" : "🛡️ O posto resistiu"}</h3><div class="estrelas-resultado">${"★".repeat(estrelas)}${"☆".repeat(3-estrelas)}</div><h2>${destruicao}% destruído</h2><div class="barra-progresso"><span style="width:${destruicao}%"></span></div><p>${destruicao >= 50 ? "⭐ Marco de 50% alcançado." : "A primeira estrela exige 50% de destruição."}</p><p>${fortalezaDestruida ? "⭐ Núcleo do posto derrubado." : "O núcleo inimigo resistiu."}</p><p>Recompensas: 🪙 ${formatar(ouroGanho)} ouro • 🧪 ${formatar(elixirGanho)} elixir • 💎 ${diamantesGanho} diamantes</p><p class="aviso">As tropas enviadas foram consumidas na simulação desta expedição. Próximo estágio: combate visual com alvos individuais.</p>`;
+  salvar(); atualizarTudo(); notificar(`Expedição concluída: ${estrelas} estrela(s).`); trocarTela("batalha");
 }
 
 function calcularPoderTropas(quantidadeEnviada) {

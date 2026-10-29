@@ -228,3 +228,38 @@ footer { padding: 25px; color: var(--suave); text-align: center; border-top: 1px
   .alvo-info { grid-template-columns: 1fr; }
   .titulo-bloco { align-items: flex-start; flex-direction: column; }
 }
+/* Ascensão: identidade de campanha e suporte mobile. */
+:root { --fundo:#0d1013; --painel:#171b20; --painel2:#20262d; --borda:#343b42; --laranja:#ff8a24; --laranja-claro:#ffc06b; --verde:#73bd79; }
+body { background: radial-gradient(ellipse at 50% -20%, #2b2117 0, #111418 48%, #0d1013 100%); }
+.topo { background:#111418; }
+.simbolo { position:relative; border-radius:14px 14px 14px 5px; background:linear-gradient(145deg,#ffc06b,#f0781c); box-shadow:0 0 26px #f0781c30; }
+.simbolo span { font-size:30px; }
+.marca h1 { letter-spacing:1.7px; }
+.painel-progresso { margin:16px 0 22px; padding:17px 19px; border:1px solid #70431f; border-radius:13px; background:linear-gradient(105deg,#241a13,#191b1c 65%); }
+.painel-progresso .era-head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.painel-progresso h3 { margin:0; }
+.era-track { display:grid; grid-template-columns:repeat(18,minmax(21px,1fr)); gap:5px; margin-top:14px; }
+.era-step { display:grid; place-items:center; min-height:27px; border:1px solid #44413d; border-radius:6px; color:#9da2a4; font-size:10px; background:#171a1d; }
+.era-step.atual { border-color:var(--laranja); color:#1b1208; font-weight:900; background:var(--laranja); box-shadow:0 0 13px #ff8a2455; }
+.era-step.conquistado { border-color:#73502b; color:#ffc06b; background:#322417; }
+.era-note { margin:11px 0 0; color:var(--suave); font-size:12px; }
+.selecao-ataque { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin:14px 0; }
+.selecao-unidade { display:flex; align-items:center; gap:10px; padding:11px; border:1px solid var(--borda); border-radius:9px; background:var(--painel2); }
+.selecao-unidade .unit-emoji { font-size:23px; }
+.selecao-unidade .unit-info { flex:1; min-width:0; }
+.selecao-unidade small { color:var(--suave); display:block; margin-top:3px; }
+.selecao-unidade input { width:62px; padding:9px 4px; color:white; border:1px solid #555; border-radius:7px; background:#101316; text-align:center; }
+.linha-ataque { display:flex; justify-content:space-between; align-items:center; gap:12px; color:var(--suave); font-size:12px; }
+.heroi-card { display:grid; grid-template-columns:minmax(190px,.8fr) 1.2fr; gap:18px; padding:24px; border:1px solid #594126; border-radius:15px; background:linear-gradient(135deg,#2c2016,#1b2024 58%,#15191c); }
+.heroi-portrait { display:grid; place-items:center; min-height:220px; border-radius:12px; background:radial-gradient(circle,#a8581e55,#1a1d21 68%); font-size:104px; }
+.hero-stat { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #353b40; color:var(--suave); }
+.hero-stat strong { color:var(--texto); }
+.equip-slot { display:flex; align-items:center; gap:12px; margin-top:10px; padding:12px; border:1px solid #484138; border-radius:9px; background:#171a1e; }
+.equip-slot span:first-child { font-size:24px; }
+.equip-slot small { color:var(--suave); display:block; }
+.bonus-unlock { margin-top:14px; padding:13px; color:#e8d2b7; border-left:3px solid var(--laranja); background:#30251b; font-size:13px; line-height:1.5; }
+.batalha-nav { border:1px solid #79502d; }
+button:focus-visible, input:focus-visible { outline:2px solid var(--laranja-claro); outline-offset:2px; }
+footer strong { color:var(--laranja-claro); letter-spacing:1px; }
+footer small { display:inline-block; margin-top:7px; }
+@media(max-width:700px){.era-track{grid-template-columns:repeat(9,minmax(22px,1fr));}.heroi-card{grid-template-columns:1fr}.heroi-portrait{min-height:150px;font-size:78px}.selecao-ataque{grid-template-columns:1fr}.linha-ataque{align-items:stretch;flex-direction:column}.linha-ataque .botao-principal{width:100%}}

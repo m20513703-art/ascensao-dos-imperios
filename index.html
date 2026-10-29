@@ -10,10 +10,10 @@
 <body>
   <header class="topo">
     <div class="marca">
-      <div class="simbolo">⚔</div>
+      <div class="simbolo"><span>✦</span></div>
       <div>
         <h1>ASCENSÃO DOS IMPÉRIOS</h1>
-        <small>Construa • Evolua • Conquiste</small>
+        <small>Erga seu estandarte. Escreva sua lenda.</small>
       </div>
     </div>
 
@@ -30,6 +30,7 @@
     <button class="nav-btn batalha-nav" data-tela="batalha">⚔️ BATALHA</button>
     <button class="nav-btn" data-tela="exercito">🛡️ EXÉRCITO</button>
     <button class="nav-btn" data-tela="missoes">📜 MISSÕES</button>
+    <button class="nav-btn" data-tela="heroi">🦁 HERÓI</button>
   </nav>
 
   <main>
@@ -38,7 +39,7 @@
         <div>
           <p class="sobretitulo">SEU REINO</p>
           <h2 id="tituloFortaleza">Fortaleza nível 1</h2>
-          <p class="descricao">Desenvolva sua vila e prepare suas defesas.</p>
+          <p class="descricao">Construa, pesquise e prepare seu domínio para a próxima era.</p>
         </div>
         <div class="selo-nivel">NÍVEL <strong id="nivelFortaleza">1</strong></div>
       </div>
@@ -47,9 +48,10 @@
         <div id="jogo3d">
           <div class="carregando" id="carregando">Carregando sua vila...</div>
         </div>
-        <div class="dica-camera">Arraste para girar • Use dois dedos ou a roda para aproximar</div>
+        <div class="dica-camera">Deslize para girar • Pinça para aproximar</div>
       </div>
 
+      <div id="painelProgresso" class="painel-progresso"></div>
       <div class="resumo-vila">
         <div class="mini-card"><span>🏰</span><div><small>FORTALEZA</small><strong id="resumoNivel">Nível 1</strong></div></div>
         <div class="mini-card"><span>🐰</span><div><small>TROPAS TREINADAS</small><strong id="resumoTropas">30</strong></div></div>
@@ -59,7 +61,7 @@
       <div class="bloco">
         <div class="titulo-bloco">
           <div><p class="sobretitulo">ADMINISTRAÇÃO</p><h3>Construções da vila</h3></div>
-          <span class="etiqueta">EM DESENVOLVIMENTO</span>
+          <span class="etiqueta">SUA FRONTEIRA</span>
         </div>
         <div id="listaConstrucoes" class="lista-construcoes"></div>
       </div>
@@ -70,7 +72,7 @@
         <div>
           <p class="sobretitulo">ATAQUE E RECOMPENSAS</p>
           <h2>⚔️ BATALHA</h2>
-          <p class="descricao">Ataque uma vila inimiga controlada pelo jogo.</p>
+          <p class="descricao">Monte sua formação e enfrente um posto rival gerado pelo jogo.</p>
         </div>
         <div class="selo-nivel">⭐⭐⭐</div>
       </div>
@@ -92,8 +94,9 @@
           <div><small>Defesas</small><strong>Torres e muralhas</strong></div>
           <div><small>Recompensa-base</small><strong>🪙 300 + 🧪 300</strong></div>
         </div>
-        <p class="aviso">A batalha é uma simulação inicial. O resultado será calculado com base nas tropas enviadas. O combate detalhado será desenvolvido nas próximas etapas.</p>
-        <button class="botao-principal" id="btnAtacar">⚔️ ESCOLHER TROPAS E ATACAR</button>
+        <p class="aviso">Batalhas são encontros táticos resolvidos em uma simulação de campanha. As unidades enviadas podem sofrer baixas; ajuste a formação antes de partir.</p>
+        <div id="selecaoAtaque" class="selecao-ataque"></div>
+        <div class="linha-ataque"><span id="resumoAtaque">Escolha unidades para formar seu destacamento.</span><button class="botao-principal" id="btnAtacar">⚔️ INICIAR EXPEDIÇÃO</button></div>
       </div>
 
       <div id="resultadoBatalha" class="bloco resultado" hidden></div>
@@ -111,7 +114,13 @@
         <div class="mini-card"><span>🐰</span><div><small>TROPAS</small><strong id="tropasExercito">30</strong></div></div>
         <div class="mini-card"><span>🏕️</span><div><small>ESPAÇOS OCUPADOS</small><strong id="espacosOcupados">30 / 30</strong></div></div>
       </div>
+      <div class="bloco"><p class="sobretitulo">UNIDADES DO REINO</p><h3>Treinar e evoluir</h3><p class="descricao">Cada espécie tem um papel e ocupa espaços diferentes no acampamento.</p></div>
       <div id="listaTropas" class="lista-tropas"></div>
+    </section>
+
+    <section id="tela-heroi" class="tela">
+      <div class="cabecalho-secao"><div><p class="sobretitulo">CAMPEÕES DO REINO</p><h2>Herói & relíquias</h2><p class="descricao">Uma fundação original para a progressão de campeões e equipamentos.</p></div></div>
+      <div id="painelHeroi"></div>
     </section>
 
     <section id="tela-missoes" class="tela">
@@ -127,7 +136,7 @@
     </section>
   </main>
 
-  <footer>Ascensão dos Impérios — Um reino construído por você.</footer>
+  <footer><strong>ASCENSÃO DOS IMPÉRIOS</strong> <span>— Uma aventura de estratégia original.</span><br><small>Salvamento local neste navegador • Sem conta obrigatória • Sincronização online ainda não disponível.</small></footer>
 
   <div id="notificacao" class="notificacao"></div>
 
