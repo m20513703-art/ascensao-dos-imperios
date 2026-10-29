@@ -376,6 +376,10 @@ function montarProgresso() {
 function montarHeroi() {
   const painel = document.getElementById("painelHeroi");
   if (!painel) return;
+  if (estado.fortaleza < 4) {
+    painel.innerHTML = `<article class="heroi-bloqueado"><span class="cadeado">🔒</span><p class="sobretitulo">RECURSO BLOQUEADO</p><h3>Campeão do Vale</h3><p>O líder heroico ainda não está disponível nesta etapa. Ele será revelado quando sua <strong>Fortaleza alcançar o nível 4</strong>.</p></article>`;
+    return;
+  }
   const h = estado.heroi || heroiBase;
   const xpProx = h.nivel * 100;
   painel.innerHTML = `<article class="heroi-card"><div class="heroi-portrait">${h.icone}</div><div><p class="sobretitulo">CAMPEÃO NÍVEL ${h.nivel}</p><h3>${h.nome}</h3><p class="descricao">Um líder original que cresce com as expedições do seu reino.</p><div class="hero-stat"><span>Experiência</span><strong>${h.xp} / ${xpProx} XP</strong></div><div class="barra-progresso"><span style="width:${Math.min(100, h.xp / xpProx * 100)}%"></span></div><div class="hero-stat"><span>Habilidade</span><strong>${h.habilidade}</strong></div><div class="equip-slot"><span>🔥</span><div><strong>Medalhão da Aurora</strong><small>Relíquia inicial • +8% poder do herói</small></div></div><div class="equip-slot"><span>🛡️</span><div><strong>Couraça do Vale</strong><small>🔒 Desbloqueia no Centro de Evolução nível 2</small></div></div><div class="bonus-unlock">Próximo marco: <strong>${estado.fortaleza >= 3 ? 'equipamentos ativos' : 'Fortaleza 3'}</strong>. Login e nuvem serão adicionados apenas com backend seguro; este protótipo salva no navegador.</div></div></article>`;
@@ -409,6 +413,7 @@ function atualizarRecursos() {
   document.getElementById("trabalhadores").textContent =
     `${trabalhadoresLivres()} / ${trabalhadoresTotal()}`;
   document.getElementById("nivelFortaleza").textContent = estado.fortaleza;
+  document.querySelectorAll('[data-unlock-hero]').forEach(el => { el.hidden = estado.fortaleza < 4; });
   document.getElementById("tituloFortaleza").textContent = `Fortaleza nível ${estado.fortaleza}`;
   ["perfilNivel", "profileLevel", "switchLevel"].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = id === "perfilNivel" ? estado.fortaleza : `Fortaleza nível ${estado.fortaleza} • salvo aqui`; });
   const trofeus = document.getElementById("trofeus"); if (trofeus) trofeus.textContent = formatar((estado.vitorias || 0) * 12);
@@ -649,6 +654,7 @@ function fecharPainel(id) {
 }
 
 function trocarTela(nome) {
+  if (nome === "heroi" && estado.fortaleza < 4) { notificar("O Campeão do Vale será revelado ao alcançar Fortaleza 4."); return; }
   document.body.classList.toggle("subscreen", nome !== "vila");
   document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("ativo"));
