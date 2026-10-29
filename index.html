@@ -8,65 +8,39 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="topo">
-    <div class="marca">
-      <div class="simbolo"><span>✦</span></div>
-      <div>
-        <h1>ASCENSÃO DOS IMPÉRIOS</h1>
-        <small>Erga seu estandarte. Escreva sua lenda.</small>
-      </div>
-    </div>
-
+  <header class="topo game-hud">
+    <button class="perfil-btn" id="abrirPerfil" aria-label="Perfil e configurações"><span class="avatar">🦁</span><span class="perfil-info"><b>Mateus</b><small>Fortaleza <i id="perfilNivel">1</i></small></span><span class="trofeu">🏆 <b id="trofeus">0</b></span></button>
+    <div class="marca"><div class="simbolo">✦</div><div><h1>ASCENSÃO DOS IMPÉRIOS</h1><small>Seu reino • progresso local</small></div></div>
     <div class="recursos">
-      <div class="recurso"><span>🪙</span><div><small>OURO</small><strong id="ouro">1.000</strong></div></div>
-      <div class="recurso"><span>🧪</span><div><small>ELIXIR VERDE</small><strong id="elixir">1.000</strong></div></div>
-      <div class="recurso"><span>💎</span><div><small>DIAMANTES</small><strong id="diamantes">0</strong></div></div>
-      <div class="recurso"><span>👷</span><div><small>TRABALHADORES</small><strong id="trabalhadores">1</strong></div></div>
+      <div class="recurso"><span>🪙</span><div><small>OURO</small><strong id="ouro">1.000</strong></div><button aria-label="Mais ouro" class="mais-recurso">+</button></div>
+      <div class="recurso"><span>🧪</span><div><small>ESSÊNCIA</small><strong id="elixir">1.000</strong></div><button aria-label="Mais essência" class="mais-recurso">+</button></div>
+      <div class="recurso"><span>💎</span><div><small>CRISTAIS</small><strong id="diamantes">0</strong></div></div>
+      <div class="recurso trabalhadores"><span>🛠️</span><div><small>ARTÍFICES</small><strong id="trabalhadores">1</strong></div></div>
     </div>
   </header>
-
-  <nav class="navegacao">
-    <button class="nav-btn ativo" data-tela="vila">🏰 MINHA VILA</button>
-    <button class="nav-btn batalha-nav" data-tela="batalha">⚔️ BATALHA</button>
-    <button class="nav-btn" data-tela="exercito">🛡️ EXÉRCITO</button>
-    <button class="nav-btn" data-tela="missoes">📜 MISSÕES</button>
-    <button class="nav-btn" data-tela="heroi">🦁 HERÓI</button>
+  <nav class="navegacao" aria-label="Seções do jogo">
+    <button class="nav-btn ativo" data-tela="vila">Vila</button><button class="nav-btn batalha-nav" data-tela="batalha">Expedição</button><button class="nav-btn" data-tela="exercito">Companhia</button><button class="nav-btn" data-tela="missoes">Jornada</button><button class="nav-btn" data-tela="heroi">Campeão</button>
   </nav>
-
   <main>
     <section id="tela-vila" class="tela ativa">
-      <div class="cabecalho-secao">
-        <div>
-          <p class="sobretitulo">SEU REINO</p>
-          <h2 id="tituloFortaleza">Fortaleza nível 1</h2>
-          <p class="descricao">Construa, pesquise e prepare seu domínio para a próxima era.</p>
-        </div>
-        <div class="selo-nivel">NÍVEL <strong id="nivelFortaleza">1</strong></div>
+      <div class="game-world">
+        <div class="world-title"><span class="world-mark">✦</span><div><strong>VALE DO ESTANDARTE</strong><small id="tituloFortaleza">Fortaleza nível 1</small></div></div>
+        <div class="world-status"><span>☀️ Dia claro</span><span>🌿 Território protegido</span></div>
+        <div class="left-rail"><button class="rail-btn" data-open="profilePanel" aria-label="Perfil">🦁</button><button class="rail-btn" data-tela="missoes" aria-label="Jornada">📜</button><button class="rail-btn" data-tela="heroi" aria-label="Campeão">🛡️</button><button class="rail-btn" data-tela="exercito" aria-label="Aliança">🤝</button></div>
+        <div class="game-stage"><div id="jogo3d"><div class="carregando" id="carregando">Preparando o vale…</div></div></div>
+        <div class="scene-hint">ARRASTE PARA EXPLORAR O VALE</div>
+        <button class="attack-cta" data-tela="batalha"><span>⚔</span><b>EXPEDIÇÃO</b><small>Explore as fronteiras</small></button>
+        <div class="right-rail"><button class="round-tool" data-open="buildPanel">🧱<small>Construir</small></button><button class="round-tool" data-tela="exercito">🐾<small>Companhia</small></button></div>
+        <div class="bottom-dock"><button data-open="buildPanel"><span>🏗️</span><small>Edificar</small></button><button data-tela="exercito"><span>🐾</span><small>Tropas</small></button><button data-tela="heroi"><span>🦁</span><small>Herói</small></button><button data-tela="missoes"><span>📜</span><small>Missões</small></button><button data-open="settingsPanel"><span>⚙️</span><small>Ajustes</small></button></div>
+        <div class="game-footer-note">SALVAMENTO LOCAL NESTE NAVEGADOR • SEM CONTA OBRIGATÓRIA</div>
       </div>
-
-      <div class="painel-jogo">
-        <div id="jogo3d">
-          <div class="carregando" id="carregando">Carregando sua vila...</div>
-        </div>
-        <div class="dica-camera">Deslize para girar • Pinça para aproximar</div>
-      </div>
-
-      <div id="painelProgresso" class="painel-progresso"></div>
-      <div class="resumo-vila">
-        <div class="mini-card"><span>🏰</span><div><small>FORTALEZA</small><strong id="resumoNivel">Nível 1</strong></div></div>
-        <div class="mini-card"><span>🐰</span><div><small>TROPAS TREINADAS</small><strong id="resumoTropas">30</strong></div></div>
-        <div class="mini-card"><span>🛡️</span><div><small>CAPACIDADE</small><strong id="resumoCapacidade">30 espaços</strong></div></div>
-      </div>
-
-      <div class="bloco">
-        <div class="titulo-bloco">
-          <div><p class="sobretitulo">ADMINISTRAÇÃO</p><h3>Construções da vila</h3></div>
-          <span class="etiqueta">SUA FRONTEIRA</span>
-        </div>
-        <div id="listaConstrucoes" class="lista-construcoes"></div>
-      </div>
+      <aside class="game-panel" id="buildPanel" aria-label="Edificações"><button class="panel-close" data-close="buildPanel">×</button><p class="sobretitulo">DESENVOLVA SEU DOMÍNIO</p><h2>Edificações</h2><div class="level-pill">FORTALEZA <b id="nivelFortaleza">1</b> / 18</div><div id="painelProgresso" class="painel-progresso"></div><div id="listaConstrucoes" class="lista-construcoes"></div></aside>
+      <aside class="game-panel account-panel" id="profilePanel"><button class="panel-close" data-close="profilePanel">×</button><div class="profile-hero"><span class="profile-avatar">🦁</span><div><b>Mateus</b><small>Senhor do Vale • <span id="profileLevel">Fortaleza 1</span></small></div></div><div class="account-id"><span>ID local do reino</span><b>VALE-LOCAL</b></div><button class="panel-action" data-open="accountsPanel">🔁 Alternar reino salvo</button><button class="panel-action" data-open="settingsPanel">⚙️ Configurações</button><p class="local-disclosure">Seu progresso fica salvo apenas neste navegador e aparelho. Não existe login, e-mail de confirmação ou sincronização online nesta versão.</p><button class="panel-action" data-close="profilePanel">↩ Voltar ao vale</button></aside>
+      <aside class="game-panel account-panel" id="accountsPanel"><button class="panel-close" data-close="accountsPanel">×</button><p class="sobretitulo">REINOS NESTE APARELHO</p><h2>Alternar reino</h2><div class="account-row active-account"><span>🦁</span><div><b>Vale de Mateus</b><small id="switchLevel">Fortaleza nível 1 • salvo aqui</small></div><strong>ATIVO</strong></div><p class="local-disclosure">Somente este reino local está disponível agora. Criar perfis adicionais e sincronizar entre aparelhos ainda não está implementado.</p><button class="panel-action" data-close="accountsPanel">Continuar neste reino</button></aside>
+      <aside class="game-panel account-panel" id="settingsPanel"><button class="panel-close" data-close="settingsPanel">×</button><p class="sobretitulo">PREFERÊNCIAS</p><h2>Configurações</h2><div class="setting-row">Som do jogo <span>🔈</span></div><div class="setting-row">Idioma <span>Português</span></div><div class="setting-row">Dados de jogo <span>💾 Local</span></div><p class="local-disclosure">O salvamento não é uma conta na nuvem. Limpar os dados do navegador pode apagar seu progresso.</p><button class="panel-action" data-close="settingsPanel">Fechar ajustes</button></aside>
+      <div class="overlay-scrim" data-close-all></div>
+      <div class="legacy-stats" aria-hidden="true"><div id="resumoNivel">Nível 1</div><div id="resumoTropas">30</div><div id="resumoCapacidade">30 espaços</div></div>
     </section>
-
     <section id="tela-batalha" class="tela">
       <div class="cabecalho-secao">
         <div>
@@ -136,7 +110,7 @@
     </section>
   </main>
 
-  <footer><strong>ASCENSÃO DOS IMPÉRIOS</strong> <span>— Uma aventura de estratégia original.</span><br><small>Salvamento local neste navegador • Sem conta obrigatória • Sincronização online ainda não disponível.</small></footer>
+  <footer class="subscreen-footer">ASCENSÃO DOS IMPÉRIOS • Uma experiência estratégica original.</footer>
 
   <div id="notificacao" class="notificacao"></div>
 

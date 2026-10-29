@@ -389,6 +389,8 @@ function atualizarRecursos() {
     `${trabalhadoresLivres()} / ${trabalhadoresTotal()}`;
   document.getElementById("nivelFortaleza").textContent = estado.fortaleza;
   document.getElementById("tituloFortaleza").textContent = `Fortaleza nível ${estado.fortaleza}`;
+  ["perfilNivel", "profileLevel", "switchLevel"].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = id === "perfilNivel" ? estado.fortaleza : `Fortaleza nível ${estado.fortaleza} • salvo aqui`; });
+  const trofeus = document.getElementById("trofeus"); if (trofeus) trofeus.textContent = formatar((estado.vitorias || 0) * 12);
   document.getElementById("resumoNivel").textContent = `Nível ${estado.fortaleza}`;
   document.getElementById("resumoTropas").textContent = formatar(totalTropas());
   document.getElementById("resumoCapacidade").textContent = `${capacidadeAcampamentos()} espaços`;
@@ -610,7 +612,22 @@ function atualizarTudo() {
     estado.ultimaBatalha || "Você ainda não participou de nenhuma batalha.";
 }
 
+function fecharPaineis() {
+  document.querySelectorAll(".game-panel").forEach(p => p.classList.remove("open"));
+  document.querySelector(".overlay-scrim")?.classList.remove("visible");
+}
+function abrirPainel(id) {
+  fecharPaineis();
+  document.getElementById(id)?.classList.add("open");
+  document.querySelector(".overlay-scrim")?.classList.add("visible");
+}
+function fecharPainel(id) {
+  document.getElementById(id)?.classList.remove("open");
+  if (!document.querySelector(".game-panel.open")) document.querySelector(".overlay-scrim")?.classList.remove("visible");
+}
+
 function trocarTela(nome) {
+  document.body.classList.toggle("subscreen", nome !== "vila");
   document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("ativo"));
 
@@ -626,6 +643,19 @@ document.querySelector(".navegacao").addEventListener("click", evento => {
 });
 
 document.addEventListener("click", evento => {
+  const telaBotao = evento.target.closest("[data-tela]");
+  if (telaBotao && !telaBotao.disabled) {
+    evento.preventDefault();
+    trocarTela(telaBotao.dataset.tela);
+    fecharPaineis();
+    return;
+  }
+  const abrir = evento.target.closest("[data-open]");
+  if (abrir) { evento.preventDefault(); abrirPainel(abrir.dataset.open); return; }
+  const fechar = evento.target.closest("[data-close]");
+  if (fechar) { evento.preventDefault(); fecharPainel(fechar.dataset.close); return; }
+  if (evento.target.closest("[data-close-all]")) { fecharPaineis(); return; }
+  if (evento.target.closest("#abrirPerfil")) { abrirPainel("profilePanel"); return; }
   const botao = evento.target.closest("[data-acao]");
   if (!botao || botao.disabled) return;
 
@@ -770,12 +800,28 @@ function criarTerreno() {
   adicionarCaixa(0, 0, 0, 9, 0.18, 9, 0x96764c);
   adicionarCaixa(0, 0.18, 0, 7.6, 0.12, 7.6, 0xc3a16a);
 
-  // Caminhos de terra
+  // Caminhos sinuosos e cercas de madeira, com paleta própria do Vale.
   adicionarCaixa(0, 0.01, 5, 2.2, 0.04, 12, 0xb79a6b);
   adicionarCaixa(-5, 0.01, 0, 12, 0.04, 2.2, 0xb79a6b);
+  // Cercado de pedra ao redor do núcleo da vila.
+  for (let i = -12; i <= 12; i += 1.5) {
+    if (Math.abs(i) > 2.5) {
+      adicionarCaixa(i, .02, -12, 1.15, .65, .45, i % 3 ? 0x988967 : 0xb49a68);
+      adicionarCaixa(i, .02, 12, 1.15, .65, .45, i % 2 ? 0xa28e65 : 0xc0a875);
+      adicionarCaixa(-12, .02, i, .45, .65, 1.15, i % 2 ? 0x988967 : 0xb49a68);
+      adicionarCaixa(12, .02, i, .45, .65, 1.15, i % 3 ? 0xa28e65 : 0xc0a875);
+    }
+  }
+  // Pequenas pedras e flores coloridas trazem densidade ao terreno sem imagens de terceiros.
+  for (let i = 0; i < 95; i++) {
+    const x = (Math.random() - .5) * 34, z = (Math.random() - .5) * 34;
+    if (Math.abs(x) < 12.5 && Math.abs(z) < 12.5) continue;
+    const flower = new THREE.Mesh(new THREE.SphereGeometry(.13 + Math.random() * .12, 6, 5), material([0xe9d46a,0xc96d53,0xd9e5ba,0x9dbf70][Math.floor(Math.random()*4)]));
+    flower.position.set(x, .12, z); flower.castShadow = true; cena.add(flower);
+  }
 
   // Árvores decorativas
-  for (let i = 0; i < 28; i++) {
+  for (let i = 0; i < 52; i++) {
     const x = (Math.random() - 0.5) * 45;
     const z = (Math.random() - 0.5) * 45;
     if (Math.abs(x) < 8 && Math.abs(z) < 8) continue;
