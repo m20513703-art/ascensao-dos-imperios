@@ -289,3 +289,18 @@ main{position:fixed;inset:0;width:100%;height:100%;max-width:none;margin:0;overf
 @media(max-width:700px){.campo-batalha-wrap{padding:8px;margin:5px -5px 18px}.barra-combate{gap:6px}.barra-combate strong{font-size:12px}.barra-combate .botao-pequeno{padding:7px;font-size:10px}.estado-combate{font-size:9px}.estado-combate span{padding:5px 4px}.mapa-rival{aspect-ratio:.95;min-height:300px}.predio-inimigo{width:48px}.predio-inimigo>span{width:32px;height:30px;font-size:18px}.predio-inimigo>b{font-size:7px}.zona-z{width:59px;height:47px}.zona-z small{font-size:6px}.zona-sul{left:calc(50% - 30px)}.deploy-unit{min-width:120px}}
 
 [hidden]{display:none!important}
+
+/* Leitura consistente nos painéis de batalha e menus de jogo */
+#tela-batalha .bloco, #tela-exercito .bloco, #tela-missoes .bloco {
+  color: #f6efd9;
+  background: linear-gradient(140deg, #252d24, #1b241e);
+  border-color: #56664b;
+}
+#tela-batalha .bloco h3, #tela-batalha .bloco h2,
+#tela-batalha .bloco .sobretitulo, #tela-batalha .bloco .descricao {
+  color: #f6efd9;
+}
+#tela-batalha .bloco .sobretitulo { color: #ffe083; }
+#tela-batalha .alvo-selecao .descricao { color: #d2cfb6; }
+#tela-batalha .resumo-alvo { background: #19221a; color: #fff3d4; }
+#tela-batalha .resumo-alvo span { color: #d2cfb6; }
