@@ -85,7 +85,6 @@ const rivais = [
 const erasFortaleza = [
   ["Aldeia do Despertar", "O primeiro estandarte foi fincado."], ["Vigília de Pedra", "Muralhas e coletores entram no ritmo."], ["Bosque das Trilhas", "O Centro de Evolução desperta."], ["Forja do Crepúsculo", "Catapultas e relíquias chegam ao reino."], ["Coroa de Cinzas", "Novas fronteiras aguardam exploração."]
 ];
-const heroiBase = { nome: "Aruan, o Leão-Guardião", icone: "🦁", nivel: 1, xp: 0, habilidade: "Rugido de Brasa" };
 
 function carregarEstado() {
   try {
@@ -102,7 +101,6 @@ function carregarEstado() {
       tropas: { ...base.tropas, ...(recebido.tropas || {}) },
       evolucoes: recebido.evolucoes || {},
       missoesReclamadas: recebido.missoesReclamadas || [],
-      heroi: { ...heroiBase, ...(recebido.heroi || {}) },
       selecaoAtaque: recebido.selecaoAtaque || {}
     };
   } catch (erro) {
@@ -373,18 +371,6 @@ function montarProgresso() {
   painel.innerHTML = `<div class="era-head"><div><p class="sobretitulo">MAPA DE ASCENSÃO</p><h3>${era[0]}</h3></div><strong>FORTALEZA ${atual}/4</strong></div><div class="era-track">${Array.from({length:4},(_,i)=>`<span class="era-step ${i+1<atual?'conquistado ':''}${i+1===atual?'atual':''}" title="Fortaleza ${i+1}">${i+1}</span>`).join('')}</div><p class="era-note">${era[1]} Próxima era: <strong>${atual < 4 ? `Fortaleza ${atual + 1}` : 'marco atual alcançado'}</strong>. Os marcos acima são a trilha planejada de progressão.</p>`;
 }
 
-function montarHeroi() {
-  const painel = document.getElementById("painelHeroi");
-  if (!painel) return;
-  if (estado.fortaleza < 4) {
-    painel.innerHTML = `<article class="heroi-bloqueado"><span class="cadeado">🔒</span><p class="sobretitulo">RECURSO BLOQUEADO</p><h3>Campeão do Vale</h3><p>O líder heroico ainda não está disponível nesta etapa. Ele será revelado quando sua <strong>Fortaleza alcançar o nível 4</strong>.</p></article>`;
-    return;
-  }
-  const h = estado.heroi || heroiBase;
-  const xpProx = h.nivel * 100;
-  painel.innerHTML = `<article class="heroi-card"><div class="heroi-portrait">${h.icone}</div><div><p class="sobretitulo">CAMPEÃO NÍVEL ${h.nivel}</p><h3>${h.nome}</h3><p class="descricao">Um líder original que cresce com as expedições do seu reino.</p><div class="hero-stat"><span>Experiência</span><strong>${h.xp} / ${xpProx} XP</strong></div><div class="barra-progresso"><span style="width:${Math.min(100, h.xp / xpProx * 100)}%"></span></div><div class="hero-stat"><span>Habilidade</span><strong>${h.habilidade}</strong></div><div class="equip-slot"><span>🔥</span><div><strong>Medalhão da Aurora</strong><small>Relíquia inicial • +8% poder do herói</small></div></div><div class="equip-slot"><span>🛡️</span><div><strong>Couraça do Vale</strong><small>🔒 Desbloqueia no Centro de Evolução nível 2</small></div></div><div class="bonus-unlock">Próximo marco: <strong>${estado.fortaleza >= 3 ? 'equipamentos ativos' : 'Fortaleza 3'}</strong>. Login e nuvem serão adicionados apenas com backend seguro; este protótipo salva no navegador.</div></div></article>`;
-}
-
 function montarSelecaoAtaque() {
   const el = document.getElementById("selecaoAtaque");
   if (!el) return;
@@ -413,8 +399,7 @@ function atualizarRecursos() {
   document.getElementById("trabalhadores").textContent =
     `${trabalhadoresLivres()} / ${trabalhadoresTotal()}`;
   document.getElementById("nivelFortaleza").textContent = estado.fortaleza;
-  document.querySelectorAll('[data-unlock-hero]').forEach(el => { el.hidden = estado.fortaleza < 4; });
-  document.getElementById("tituloFortaleza").textContent = `Fortaleza nível ${estado.fortaleza}`;
+    document.getElementById("tituloFortaleza").textContent = `Fortaleza nível ${estado.fortaleza}`;
   ["perfilNivel", "profileLevel", "switchLevel"].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = id === "perfilNivel" ? estado.fortaleza : `Fortaleza nível ${estado.fortaleza} • salvo aqui`; });
   const trofeus = document.getElementById("trofeus"); if (trofeus) trofeus.textContent = formatar((estado.vitorias || 0) * 12);
   document.getElementById("resumoNivel").textContent = `Nível ${estado.fortaleza}`;
@@ -629,7 +614,6 @@ function atualizarTudo() {
   montarProgresso();
   montarSelecaoAtaque();
   montarRivais();
-  montarHeroi();
   montarListaConstrucoes();
   montarListaTropas();
   montarMissoes();
@@ -654,7 +638,6 @@ function fecharPainel(id) {
 }
 
 function trocarTela(nome) {
-  if (nome === "heroi" && estado.fortaleza < 4) { notificar("O Campeão do Vale será revelado ao alcançar Fortaleza 4."); return; }
   document.body.classList.toggle("subscreen", nome !== "vila");
   document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("ativo"));
@@ -735,8 +718,7 @@ function finalizarBatalha(motivo){
  if(!batalha||batalha.encerrada)return;batalha.encerrada=true;clearInterval(loopCombate);clearInterval(timerBatalha);loopCombate=timerBatalha=null;
  const total=Object.values(batalha.porTipo).reduce((a,b)=>a+b,0),mortos=batalha.mortos,vivos=batalha.unidades.filter(u=>u.hp>0).length,destruidos=batalha.edificios.filter(b=>b.hp<=0).length,destruicao=Math.round(destruidos/batalha.total*100),estrelas=(destruicao>=50?1:0)+(batalha.edificios[0].hp<=0?1:0)+(destruicao===100?1:0),fator=destruicao/100;
  Object.entries(batalha.porTipo).forEach(([id,q])=>{const perdidas=batalha.perdas[id]||0;estado.tropas[id]=Math.max(0,(estado.tropas[id]||0)-perdidas)});
- const ouro=Math.floor(batalha.alvo.ouro*fator),elixir=Math.floor(batalha.alvo.elixir*fator),cristais=estrelas===3?10:estrelas===2?5:0;estado.ouro+=ouro;estado.elixir+=elixir;estado.diamantes+=cristais;estado.batalhas++;if(estrelas)estado.vitorias++;estado.heroi=estado.heroi||{...heroiBase};estado.heroi.xp+=estrelas*24+Math.floor(destruicao/10);if(estado.heroi.xp>=estado.heroi.nivel*100){estado.heroi.xp-=estado.heroi.nivel*100;estado.heroi.nivel++}
- const fim=motivo==='conquista'?'base destruída':motivo==='tempo'?'tempo esgotado':motivo==='retirada'?'ataque encerrado':'tropas derrotadas';estado.ultimaBatalha=`${batalha.alvo.nome}: ${destruicao}% destruído · ${estrelas} estrela(s) · ${mortos} baixa(s) · +${ouro} ouro`;
+ const ouro=Math.floor(batalha.alvo.ouro*fator),elixir=Math.floor(batalha.alvo.elixir*fator),cristais=estrelas===3?10:estrelas===2?5:0;estado.ouro+=ouro;estado.elixir+=elixir;estado.diamantes+=cristais;estado.batalhas++;if(estrelas)estado.vitorias++;const fim=motivo==='conquista'?'base destruída':motivo==='tempo'?'tempo esgotado':motivo==='retirada'?'ataque encerrado':'tropas derrotadas';estado.ultimaBatalha=`${batalha.alvo.nome}: ${destruicao}% destruído · ${estrelas} estrela(s) · ${mortos} baixa(s) · +${ouro} ouro`;
  document.getElementById('campoBatalha').hidden=true;document.getElementById('preparacaoAtaque').hidden=false;document.getElementById('resultadoBatalha').hidden=false;document.getElementById('resultadoBatalha').innerHTML=`<p class="sobretitulo">RELATÓRIO DE CAMPO · ${batalha.alvo.nome}</p><h3>${destruicao>=50?'🏆 Vitória tática!':destruicao>0?'⚔️ Retirada estratégica':'🛡️ O rival resistiu'}</h3><div class="estrelas-resultado">${'★'.repeat(estrelas)}${'☆'.repeat(3-estrelas)}</div><h2>${destruicao}% destruído</h2><p>Resultado: ${fim}. Prédios derrubados: ${destruidos}/${batalha.total}.</p><p>Desembarcaram ${batalha.unidades.length}/${total} tropa(s): ${mortos} baixa(s), ${vivos} sobrevivente(s) em campo e ${batalha.reservas.reduce((a,x)=>a+x.restante,0)} não enviados (retornam à Companhia).</p><p>Recompensas: 🪙 ${ouro} ouro · 🧪 ${elixir} essência · 💎 ${cristais} cristais.</p><button class="botao-principal" id="novoAtaque">⚔️ ESCOLHER OUTRO RIVAL</button>`;
  document.getElementById('novoAtaque').onclick=()=>{document.getElementById('resultadoBatalha').hidden=true;alvoSelecionado=null;selecaoAtaque={};document.getElementById('resumoAlvo').textContent='Selecione um povoado para revelar a formação inimiga.';atualizarTudo()};salvar();atualizarTudo();notificar(`Combate encerrado: ${destruicao}% destruído, ${mortos} baixa(s).`)
 }
