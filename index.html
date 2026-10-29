@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#172019">
   <title>Ascensão dos Impérios</title>
-  <link rel="stylesheet" href="style.css?v=20261029-ui1">
+  <link rel="stylesheet" href="style.css?v=20261029-manual-battle1">
 </head>
 <body>
   <header class="topo game-hud">
@@ -34,7 +34,7 @@
         <div class="bottom-dock"><button data-open="buildPanel"><span>🏗️</span><small>Edificar</small></button><button data-tela="exercito"><span>🐾</span><small>Tropas</small></button><button data-tela="heroi"><span>🦁</span><small>Herói</small></button><button data-tela="missoes"><span>📜</span><small>Missões</small></button><button data-open="settingsPanel"><span>⚙️</span><small>Ajustes</small></button></div>
         <div class="game-footer-note">SALVAMENTO LOCAL NESTE NAVEGADOR • SEM CONTA OBRIGATÓRIA</div>
       </div>
-      <aside class="game-panel" id="buildPanel" aria-label="Edificações"><button class="panel-close" data-close="buildPanel">×</button><p class="sobretitulo">DESENVOLVA SEU DOMÍNIO</p><h2>Edificações</h2><div class="level-pill">FORTALEZA <b id="nivelFortaleza">1</b> / 18</div><div id="painelProgresso" class="painel-progresso"></div><div id="listaConstrucoes" class="lista-construcoes"></div></aside>
+      <aside class="game-panel" id="buildPanel" aria-label="Edificações"><button class="panel-close" data-close="buildPanel">×</button><p class="sobretitulo">DESENVOLVA SEU DOMÍNIO</p><h2>Edificações</h2><div class="level-pill">FORTALEZA <b id="nivelFortaleza">1</b> / 4</div><div id="painelProgresso" class="painel-progresso"></div><div id="listaConstrucoes" class="lista-construcoes"></div></aside>
       <aside class="game-panel account-panel" id="profilePanel"><button class="panel-close" data-close="profilePanel">×</button><div class="profile-hero"><span class="profile-avatar">🦁</span><div><b>Mateus</b><small>Senhor do Vale • <span id="profileLevel">Fortaleza 1</span></small></div></div><div class="account-id"><span>ID local do reino</span><b>VALE-LOCAL</b></div><button class="panel-action" data-open="accountsPanel">🔁 Alternar reino salvo</button><button class="panel-action" data-open="settingsPanel">⚙️ Configurações</button><p class="local-disclosure">Seu progresso fica salvo apenas neste navegador e aparelho. Não existe login, e-mail de confirmação ou sincronização online nesta versão.</p><button class="panel-action" data-close="profilePanel">↩ Voltar ao vale</button></aside>
       <aside class="game-panel account-panel" id="accountsPanel"><button class="panel-close" data-close="accountsPanel">×</button><p class="sobretitulo">REINOS NESTE APARELHO</p><h2>Alternar reino</h2><div class="account-row active-account"><span>🦁</span><div><b>Vale de Mateus</b><small id="switchLevel">Fortaleza nível 1 • salvo aqui</small></div><strong>ATIVO</strong></div><p class="local-disclosure">Somente este reino local está disponível agora. Criar perfis adicionais e sincronizar entre aparelhos ainda não está implementado.</p><button class="panel-action" data-close="accountsPanel">Continuar neste reino</button></aside>
       <aside class="game-panel account-panel" id="settingsPanel"><button class="panel-close" data-close="settingsPanel">×</button><p class="sobretitulo">PREFERÊNCIAS</p><h2>Configurações</h2><div class="setting-row">Som do jogo <span>🔈</span></div><div class="setting-row">Idioma <span>Português</span></div><div class="setting-row">Dados de jogo <span>💾 Local</span></div><p class="local-disclosure">O salvamento não é uma conta na nuvem. Limpar os dados do navegador pode apagar seu progresso.</p><button class="panel-action" data-close="settingsPanel">Fechar ajustes</button></aside>
@@ -46,38 +46,37 @@
         <div>
           <p class="sobretitulo">ATAQUE E RECOMPENSAS</p>
           <h2>⚔️ BATALHA</h2>
-          <p class="descricao">Monte sua formação e enfrente um posto rival gerado pelo jogo.</p>
+          <p class="descricao">Escolha um povoado rival, selecione tropas e solte-as manualmente no campo de batalha.</p>
         </div>
         <div class="selo-nivel">⭐⭐⭐</div>
       </div>
 
-      <div class="painel-estrelas">
-        <h3>Como conquistar as 3 estrelas</h3>
-        <div class="regras-estrelas">
-          <div><span>⭐</span><strong>50% destruído</strong><small>Ganha a primeira estrela.</small></div>
-          <div><span>⭐</span><strong>Fortaleza destruída</strong><small>Ganha a segunda estrela.</small></div>
-          <div><span>⭐</span><strong>100% destruído</strong><small>Ganha a terceira estrela.</small></div>
+      <div id="preparacaoAtaque">
+        <div class="bloco alvo-selecao">
+          <p class="sobretitulo">ESCOLHA SEU ALVO</p>
+          <h3>🗺️ Povoados da fronteira</h3>
+          <p class="descricao">Escolha um rival para inspecionar sua base antes de invadir. Estes alvos são cenários locais de treinamento.</p>
+          <div id="listaRivais" class="lista-rivais"></div>
+          <div id="resumoAlvo" class="resumo-alvo">Selecione um povoado para revelar a formação inimiga.</div>
+        </div>
+        <div class="bloco">
+          <p class="sobretitulo">SEU DESTACAMENTO</p><h3>🐾 Tropas disponíveis</h3>
+          <p class="descricao">Escolha quantas tropas levar. Elas só entram no campo quando você tocar numa zona de desembarque.</p>
+          <div id="selecaoAtaque" class="selecao-ataque"></div>
+          <div class="linha-ataque"><span id="resumoAtaque">Escolha unidades para formar seu destacamento.</span><button class="botao-principal" id="btnAtacar" disabled>⚔️ PREPARAR ATAQUE</button></div>
         </div>
       </div>
-
-      <div class="bloco">
-        <p class="sobretitulo">ALVO DISPONÍVEL</p>
-        <h3>🏰 Vila da Fronteira</h3>
-        <p class="descricao">Uma fortaleza inimiga de treinamento.</p>
-        <div class="alvo-info">
-          <div><small>Defesas</small><strong>Torres e muralhas</strong></div>
-          <div><small>Recompensa-base</small><strong>🪙 300 + 🧪 300</strong></div>
+      <div id="campoBatalha" class="campo-batalha-wrap" hidden>
+        <div class="barra-combate"><div><small>ATAQUE A</small><strong id="nomeAlvoCombate">Povoado Rival</strong></div><div class="combate-relogio"><span>⏱️</span><strong id="tempoBatalha">01:15</strong></div><button id="voltarBatalha" class="botao-pequeno">Encerrar e voltar</button></div>
+        <div class="estado-combate"><span id="pctDestruicao">0% destruído</span><span id="tropasCampoResumo">0 tropas no campo</span><span id="reservaResumo">0 aguardando</span></div>
+        <div id="campoDeGuerra" class="campo-de-guerra" aria-label="Campo de batalha: toque numa zona de desembarque para soltar uma tropa">
+          <div class="mapa-rival"><div class="cerca cerca-a"></div><div class="cerca cerca-b"></div><div class="rio-rival"></div><div class="zona-z" data-zona="oeste"><span>＋</span><small>DESEMBARCAR</small></div><div class="zona-z zona-leste" data-zona="leste"><span>＋</span><small>DESEMBARCAR</small></div><div class="zona-z zona-sul" data-zona="sul"><span>＋</span><small>DESEMBARCAR</small></div><div id="prediosRivais" class="predios-rivais"></div><div id="tropasVisuais" class="tropas-visuais"></div><div id="efeitosCombate" class="efeitos-combate"></div></div>
         </div>
-        <p class="aviso">Batalhas são encontros táticos resolvidos em uma simulação de campanha. As unidades enviadas podem sofrer baixas; ajuste a formação antes de partir.</p>
-        <div id="selecaoAtaque" class="selecao-ataque"></div>
-        <div class="linha-ataque"><span id="resumoAtaque">Escolha unidades para formar seu destacamento.</span><button class="botao-principal" id="btnAtacar">⚔️ INICIAR EXPEDIÇÃO</button></div>
+        <div id="seletorDeploy" class="seletor-deploy"></div>
+        <p class="dica-deploy">Toque numa unidade abaixo e depois numa das zonas douradas do mapa. Cada toque solta uma tropa.</p>
       </div>
-
       <div id="resultadoBatalha" class="bloco resultado" hidden></div>
-      <div class="bloco">
-        <h3>Último resultado</h3>
-        <p id="historicoBatalha" class="descricao">Você ainda não participou de nenhuma batalha.</p>
-      </div>
+      <div class="bloco"><h3>Última expedição</h3><p id="historicoBatalha" class="descricao">Você ainda não participou de nenhuma batalha.</p><button id="voltarVila" class="botao-pequeno">↩ Voltar ao vale</button></div>
     </section>
 
     <section id="tela-exercito" class="tela">
@@ -116,6 +115,6 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="script.js?v=20261029-ui1"></script>
+  <script src="script.js?v=20261029-manual-battle1"></script>
 </body>
 </html>

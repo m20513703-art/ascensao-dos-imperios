@@ -73,6 +73,15 @@ let cena, camera, renderizador, controles;
 let objetosVila = [];
 let avisoTimer;
 let selecaoAtaque = {};
+let alvoSelecionado = null;
+let batalha = null;
+let timerBatalha = null;
+let loopCombate = null;
+const rivais = [
+  {id:'clareira', nome:'Clareira do Javali', emoji:'🐗', nivel:1, cor:'#c58a51', botao:'Leve', ouro:320, elixir:300, torres:1, buildings:[['🏰','Fortaleza',240,50,52],['🗼','Torre Vigia',135,25,28],['🛖','Casa do Clã',100,70,30],['🪙','Armazém',85,52,72]]},
+  {id:'bosque', nome:'Bosque da Raposa', emoji:'🦊', nivel:2, cor:'#8c6948', botao:'Médio', ouro:430, elixir:390, torres:2, buildings:[['🏰','Fortaleza',280,48,52],['🗼','Torre Vigia',145,25,25],['🗼','Torre de Pedra',160,72,31],['🛖','Cabana',100,70,72],['📦','Armazém',115,50,78]]},
+  {id:'penhasco', nome:'Penhasco do Urso', emoji:'🐻', nivel:3, cor:'#77725f', botao:'Desafio', ouro:550, elixir:500, torres:2, buildings:[['🏰','Fortaleza',320,47,50],['🗼','Torre Vigia',175,23,26],['🗼','Torre de Pedra',180,74,30],['🏚️','Salão',140,69,70],['📦','Armazém',130,48,77],['🛖','Cabana',110,24,73]]}
+];
 const erasFortaleza = [
   ["Aldeia do Despertar", "O primeiro estandarte foi fincado."], ["Vigília de Pedra", "Muralhas e coletores entram no ritmo."], ["Bosque das Trilhas", "O Centro de Evolução desperta."], ["Forja do Crepúsculo", "Catapultas e relíquias chegam ao reino."], ["Coroa de Cinzas", "Novas fronteiras aguardam exploração."]
 ];
@@ -249,8 +258,8 @@ function iniciarMelhoria(id) {
     return notificar("Todos os trabalhadores estão ocupados.");
   }
 
-  const maximo = id === "fortaleza" ? 18 : 4;
-  if (atual.nivel >= maximo) return notificar(id === "fortaleza" ? "Você alcançou o marco máximo planejado: Fortaleza 18." : "Essa construção já atingiu o nível máximo desta etapa.");
+  const maximo = id === "fortaleza" ? 4 : 4;
+  if (atual.nivel >= maximo) return notificar(id === "fortaleza" ? "Você alcançou o marco atual: Fortaleza 4." : "Essa construção já atingiu o nível máximo desta etapa.");
 
   const proximoNivel = atual.nivel + 1;
 
@@ -359,9 +368,9 @@ function coletarRecursos() {
 function montarProgresso() {
   const painel = document.getElementById("painelProgresso");
   if (!painel) return;
-  const atual = Math.max(1, Math.min(18, estado.fortaleza));
+  const atual = Math.max(1, Math.min(4, estado.fortaleza));
   const era = erasFortaleza[Math.min(erasFortaleza.length - 1, Math.floor((atual - 1) / 4))];
-  painel.innerHTML = `<div class="era-head"><div><p class="sobretitulo">MAPA DE ASCENSÃO</p><h3>${era[0]}</h3></div><strong>FORTALEZA ${atual}/18</strong></div><div class="era-track">${Array.from({length:18},(_,i)=>`<span class="era-step ${i+1<atual?'conquistado ':''}${i+1===atual?'atual':''}" title="Fortaleza ${i+1}">${i+1}</span>`).join('')}</div><p class="era-note">${era[1]} Próxima era: <strong>${atual < 18 ? `Fortaleza ${atual + 1}` : 'coroa máxima'}</strong>. Os marcos acima são a trilha planejada de progressão.</p>`;
+  painel.innerHTML = `<div class="era-head"><div><p class="sobretitulo">MAPA DE ASCENSÃO</p><h3>${era[0]}</h3></div><strong>FORTALEZA ${atual}/4</strong></div><div class="era-track">${Array.from({length:4},(_,i)=>`<span class="era-step ${i+1<atual?'conquistado ':''}${i+1===atual?'atual':''}" title="Fortaleza ${i+1}">${i+1}</span>`).join('')}</div><p class="era-note">${era[1]} Próxima era: <strong>${atual < 4 ? `Fortaleza ${atual + 1}` : 'marco atual alcançado'}</strong>. Os marcos acima são a trilha planejada de progressão.</p>`;
 }
 
 function montarHeroi() {
@@ -376,9 +385,21 @@ function montarSelecaoAtaque() {
   const el = document.getElementById("selecaoAtaque");
   if (!el) return;
   const ids = Object.entries(estado.tropas).filter(([id,q]) => q > 0);
-  if (!ids.length) { el.innerHTML = '<p class="descricao">Treine tropas no Exército para formar um destacamento.</p>'; return; }
-  el.innerHTML = ids.map(([id,q]) => { const t=tropasDados[id]; const valor=Math.min(q, Number(selecaoAtaque[id] || 0)); return `<label class="selecao-unidade"><span class="unit-emoji">${t.icone}</span><span class="unit-info"><strong>${t.nome}</strong><small>${q} disponíveis • ${t.espacos} espaço(s)</small></span><input type="number" min="0" max="${q}" value="${valor}" data-selecao="${id}"></label>`; }).join('');
-  el.querySelectorAll('[data-selecao]').forEach(input => input.addEventListener('input', () => { selecaoAtaque[input.dataset.selecao] = Math.max(0, Math.min(Number(input.max), Number(input.value) || 0)); const n=Object.values(selecaoAtaque).reduce((a,b)=>a+b,0); document.getElementById('resumoAtaque').textContent = n ? `${n} unidade(s) no destacamento.` : 'Escolha unidades para formar seu destacamento.'; }));
+  if (!ids.length) { el.innerHTML = '<p class="descricao">Treine tropas na Companhia para formar um destacamento.</p>'; return; }
+  el.innerHTML = ids.map(([id,q]) => { const t=tropasDados[id]; const valor=Math.min(q, Number(selecaoAtaque[id] || 0)); return `<label class="selecao-unidade"><span class="unit-emoji">${t.icone}</span><span class="unit-info"><strong>${t.nome}</strong><small>${q} disponíveis · ${t.espacos} espaço(s)</small></span><input type="number" min="0" max="${q}" value="${valor}" data-selecao="${id}" aria-label="Quantidade ${t.nome}"></label>`; }).join('');
+  el.querySelectorAll('[data-selecao]').forEach(input => input.addEventListener('input', () => { selecaoAtaque[input.dataset.selecao] = Math.max(0, Math.min(Number(input.max), Number(input.value) || 0)); atualizarResumoAtaque(); }));
+  atualizarResumoAtaque();
+}
+function quantidadeSelecionada(){return Object.values(selecaoAtaque).reduce((a,b)=>a+(Number(b)||0),0)}
+function atualizarResumoAtaque(){
+ const n=quantidadeSelecionada(), espacos=Object.entries(selecaoAtaque).reduce((a,[id,q])=>a+(Number(q)||0)*(tropasDados[id]?.espacos||1),0);
+ const r=document.getElementById('resumoAtaque'); if(r)r.textContent=n?`${n} tropa(s) · ${espacos}/${capacidadeAcampamentos()} espaços · toque para desembarcar`:'Escolha unidades para formar seu destacamento.';
+ const btn=document.getElementById('btnAtacar'); if(btn){btn.disabled=!alvoSelecionado||n===0||espacos>capacidadeAcampamentos();btn.textContent=alvoSelecionado?'⚔️ INICIAR ATAQUE':'⚔️ ESCOLHA UM ALVO';}
+}
+function montarRivais(){
+ const box=document.getElementById('listaRivais');if(!box)return;
+ box.innerHTML=rivais.map(r=>`<button class="rival-card ${alvoSelecionado===r.id?'selecionado':''}" data-rival="${r.id}"><span class="rival-art">${r.emoji}</span><span class="rival-info"><b>${r.nome}</b><small>Fortaleza ${r.nivel} · ${r.torres} defesa(s) · risco ${r.botao}</small><small>🪙 ${r.ouro} · 🧪 ${r.elixir}</small></span><strong>INSPECIONAR</strong></button>`).join('');
+ box.querySelectorAll('[data-rival]').forEach(b=>b.onclick=()=>{alvoSelecionado=rivais.find(r=>r.id===b.dataset.rival);montarRivais();const d=document.getElementById('resumoAlvo');d.innerHTML=`<b>${alvoSelecionado.emoji} ${alvoSelecionado.nome} selecionado</b><span>Base: ${alvoSelecionado.buildings.length} construções · ${alvoSelecionado.torres} torres. Recompensa máxima: 🪙 ${alvoSelecionado.ouro} + 🧪 ${alvoSelecionado.elixir}. O campo revelará a posição dos edifícios durante o ataque.</span>`;atualizarResumoAtaque()});
 }
 
 function atualizarRecursos() {
@@ -427,7 +448,7 @@ function montarListaConstrucoes() {
 
     if (atual) {
       const ocupado = atual.termina > Date.now();
-      const maximo = id === "fortaleza" ? 18 : 4;
+      const maximo = id === "fortaleza" ? 4 : 4;
       const custo = custoMelhoria(id, atual.nivel);
 
       lista.innerHTML += `
@@ -446,7 +467,7 @@ function montarListaConstrucoes() {
             <div class="detalhe-custo">🪙 ${formatar(custo.ouro)} • 🧪 ${formatar(custo.elixir)} • ⏱️ ${formatar(custo.tempo)}s</div>
             ${atual.nivel < maximo
               ? htmlBotao("Melhorar", `melhorar:${id}`, false)
-              : `<p>${id === "fortaleza" ? "Coroa máxima do plano atual." : "Nível máximo desta construção."}</p>`}
+              : `<p>${id === "fortaleza" ? "Marco atual alcançado." : "Nível máximo desta construção."}</p>`}
           `}
         </article>`;
     } else {
@@ -602,6 +623,7 @@ function atualizarTudo() {
   atualizarRecursos();
   montarProgresso();
   montarSelecaoAtaque();
+  montarRivais();
   montarHeroi();
   montarListaConstrucoes();
   montarListaTropas();
@@ -670,27 +692,47 @@ document.addEventListener("click", evento => {
 });
 
 document.getElementById("btnAtacar").addEventListener("click", iniciarBatalha);
-
-function iniciarBatalha() {
-  const enviados = Object.entries(selecaoAtaque).filter(([id,q]) => q > 0 && estado.tropas[id] >= q);
-  const quantidade = enviados.reduce((n,[,q]) => n + q, 0);
-  if (!quantidade) return notificar("Escolha pelo menos uma unidade para a expedição.");
-  enviados.forEach(([id,q]) => { estado.tropas[id] -= q; });
-  const poder = enviados.reduce((total,[id,q]) => { const t=tropasDados[id]; return total + q * (t.dano + t.vida / 20); }, 0);
-  const variacao = Math.floor(Math.random() * 21) - 10;
-  const destruicao = Math.min(100, Math.max(0, Math.floor(poder * 1.35 + variacao)));
-  const fortalezaDestruida = destruicao >= 70;
-  const estrelas = (destruicao >= 50 ? 1 : 0) + (fortalezaDestruida ? 1 : 0) + (destruicao >= 100 ? 1 : 0);
-  const ouroGanho = Math.floor(380 * destruicao / 100), elixirGanho = Math.floor(320 * destruicao / 100), diamantesGanho = estrelas === 3 ? 10 : estrelas === 2 ? 5 : 0;
-  estado.ouro += ouroGanho; estado.elixir += elixirGanho; estado.diamantes += diamantesGanho; estado.batalhas++;
-  if (estrelas >= 1) estado.vitorias++;
-  estado.heroi = estado.heroi || { ...heroiBase }; estado.heroi.xp += estrelas * 24 + Math.floor(destruicao / 10);
-  if (estado.heroi.xp >= estado.heroi.nivel * 100) { estado.heroi.xp -= estado.heroi.nivel * 100; estado.heroi.nivel++; notificar("Aruan subiu de nível!"); }
-  estado.ultimaBatalha = `Posto da Fronteira: ${destruicao}% destruído • ${estrelas} estrela(s) • +${ouroGanho} ouro • +${elixirGanho} elixir`;
-  selecaoAtaque = {};
-  const resultado = document.getElementById("resultadoBatalha"); resultado.hidden = false;
-  resultado.innerHTML = `<p class="sobretitulo">RELATÓRIO DA EXPEDIÇÃO</p><h3>${estrelas === 3 ? "🏆 Vitória perfeita!" : estrelas > 0 ? "⚔️ Território conquistado!" : "🛡️ O posto resistiu"}</h3><div class="estrelas-resultado">${"★".repeat(estrelas)}${"☆".repeat(3-estrelas)}</div><h2>${destruicao}% destruído</h2><div class="barra-progresso"><span style="width:${destruicao}%"></span></div><p>${destruicao >= 50 ? "⭐ Marco de 50% alcançado." : "A primeira estrela exige 50% de destruição."}</p><p>${fortalezaDestruida ? "⭐ Núcleo do posto derrubado." : "O núcleo inimigo resistiu."}</p><p>Recompensas: 🪙 ${formatar(ouroGanho)} ouro • 🧪 ${formatar(elixirGanho)} elixir • 💎 ${diamantesGanho} diamantes</p><p class="aviso">As tropas enviadas foram consumidas na simulação desta expedição. Próximo estágio: combate visual com alvos individuais.</p>`;
-  salvar(); atualizarTudo(); notificar(`Expedição concluída: ${estrelas} estrela(s).`); trocarTela("batalha");
+document.querySelectorAll('.zona-z').forEach(z=>z.addEventListener('click',()=>soltarTropa(z.dataset.zona)));
+document.getElementById('voltarBatalha').addEventListener('click',()=>finalizarBatalha('retirada'));
+document.getElementById('voltarVila').addEventListener('click',()=>{finalizarBatalha('retirada');trocarTela('vila')});
+function iniciarBatalha(){
+ if(!alvoSelecionado||!quantidadeSelecionada())return notificar('Escolha um povoado rival e pelo menos uma tropa.');
+ const espacos=Object.entries(selecaoAtaque).reduce((a,[id,q])=>a+q*tropasDados[id].espacos,0);if(espacos>capacidadeAcampamentos())return notificar('Seu destacamento excede os espaços dos acampamentos.');
+ const porTipo={};Object.entries(selecaoAtaque).forEach(([id,n])=>{if(n>0&&n<=estado.tropas[id])porTipo[id]=n});
+ batalha={alvo:alvoSelecionado, porTipo, reservas:Object.entries(porTipo).map(([tipo,n])=>({tipo,restante:n})).filter(x=>x.restante), unidades:[], edificios:alvoSelecionado.buildings.map((b,i)=>({id:i,icone:b[0],nome:b[1],hp:b[2],maxHp:b[2],x:b[3],y:b[4],torre:b[1].includes('Torre')})), tempo:75,ticks:0,total:alvoSelecionado.buildings.length,encerrada:false,perdas:{},mortos:0};
+ document.getElementById('preparacaoAtaque').hidden=true;document.getElementById('resultadoBatalha').hidden=true;document.getElementById('campoBatalha').hidden=false;document.getElementById('nomeAlvoCombate').textContent=alvoSelecionado.nome;document.getElementById('prediosRivais').innerHTML='';document.getElementById('tropasVisuais').innerHTML='';document.getElementById('efeitosCombate').innerHTML='';
+ batalha.edificios.forEach((b,i)=>{const el=document.createElement('div');el.className='predio-inimigo';el.dataset.building=i;el.style.left=b.x+'%';el.style.top=b.y+'%';el.innerHTML=`<span>${b.icone}</span><b>${b.nome}</b><i><em style="width:100%"></em></i>`;document.getElementById('prediosRivais').appendChild(el)});
+ const deploy=document.getElementById('seletorDeploy');deploy.innerHTML=Object.entries(porTipo).map(([id,n])=>`<button class="deploy-unit ${Object.keys(porTipo)[0]===id?'escolhida':''}" data-deploy="${id}"><span>${tropasDados[id].icone}</span><b>${tropasDados[id].nome}</b><small><i id="reserva-${id}">${n}</i> aguardando</small></button>`).join('');deploy.querySelectorAll('[data-deploy]').forEach(b=>b.onclick=()=>{deploy.querySelectorAll('.deploy-unit').forEach(x=>x.classList.remove('escolhida'));b.classList.add('escolhida')});
+ atualizarHudBatalha();trocarTela('batalha');loopCombate=setInterval(passoCombate,500);timerBatalha=setInterval(()=>{if(!batalha||batalha.encerrada)return;batalha.tempo--;atualizarHudBatalha();if(batalha.tempo<=0)finalizarBatalha('tempo')},1000);notificar('Invasão iniciada! Escolha a unidade e toque numa zona dourada.');
+}
+function soltarTropa(zona){
+ if(!batalha||batalha.encerrada)return;
+ const id=document.querySelector('.deploy-unit.escolhida')?.dataset.deploy;if(!id)return notificar('Escolha primeiro uma tropa para desembarcar.');
+ const slot=batalha.reservas.find(x=>x.tipo===id&&x.restante>0);if(!slot)return notificar('Não há mais unidades deste tipo aguardando.');slot.restante--;
+ const d=tropasDados[id],n=batalha.unidades.length,origins={oeste:[6,55],leste:[94,55],sul:[50,91]},[x,y]=origins[zona];
+ const unit={uid:Date.now()+Math.random(),tipo:id,hp:d.vida,maxHp:d.vida,dano:d.dano,x,y,alvo:null,proximoGolpe:0,zona};batalha.unidades.push(unit);
+ const el=document.createElement('div');el.className='tropa-campo';el.dataset.uid=unit.uid;el.style.left=x+'%';el.style.top=y+'%';el.innerHTML=`<span>${d.icone}</span><i></i>`;document.getElementById('tropasVisuais').appendChild(el);requestAnimationFrame(()=>{const target=proximoAlvo(unit);if(target){unit.alvo=target.id;el.style.left=target.x+'%';el.style.top=(target.y+7)+'%';el.classList.add('marchando')}});actualizarReserva(id);atualizarHudBatalha();
+}
+function proximoAlvo(u){const vivos=batalha.edificios.filter(b=>b.hp>0);if(!vivos.length)return null;return vivos.sort((a,b)=>Math.hypot(a.x-u.x,a.y-u.y)-Math.hypot(b.x-u.x,b.y-u.y))[0]}
+function atualizarReserva(id){const left=batalha.reservas.filter(x=>x.tipo===id).reduce((a,x)=>a+x.restante,0);const e=document.getElementById(`reserva-${id}`);if(e)e.textContent=left;const button=document.querySelector(`[data-deploy="${id}"]`);if(button){button.classList.toggle('esgotada',left===0);button.disabled=left===0}}
+function passoCombate(){
+ if(!batalha||batalha.encerrada)return;batalha.ticks++;
+ batalha.unidades.filter(u=>u.hp>0).forEach(u=>{
+   let alvo=batalha.edificios.find(b=>b.id===u.alvo&&b.hp>0);if(!alvo){alvo=proximoAlvo(u);if(alvo){u.alvo=alvo.id;const e=document.querySelector(`[data-uid="${u.uid}"]`);if(e){e.style.left=alvo.x+'%';e.style.top=(alvo.y+7)+'%'}}}
+   if(alvo&&batalha.ticks>=u.proximoGolpe){u.proximoGolpe=batalha.ticks+2;const dano=Math.max(8,Math.round(u.dano/5));alvo.hp=Math.max(0,alvo.hp-dano);const b=document.querySelector(`[data-building="${alvo.id}"]`);if(b){b.classList.add('sob-golpe');setTimeout(()=>b.classList.remove('sob-golpe'),220);b.querySelector('em').style.width=(alvo.hp/alvo.maxHp*100)+'%';if(alvo.hp<=0){b.classList.add('destruido');b.querySelector('span').textContent='💥'}}}
+ });
+ if(batalha.ticks%4===0){batalha.edificios.filter(b=>b.hp>0&&b.torre).forEach(t=>{const vitimas=batalha.unidades.filter(u=>u.hp>0).sort((a,b)=>a.hp-b.hp);if(vitimas.length){const v=vitimas[0];v.hp-=22;const e=document.querySelector(`[data-uid="${v.uid}"]`);if(e)e.classList.add('atingida');if(v.hp<=0){v.hp=0;batalha.mortos++;batalha.perdas[v.tipo]=(batalha.perdas[v.tipo]||0)+1;if(e)e.classList.add('caiu')}}})}
+ atualizarHudBatalha();if(batalha.edificios.every(b=>b.hp<=0)){finalizarBatalha('conquista')}
+}
+function atualizarHudBatalha(){if(!batalha)return;const d=Math.round(100*batalha.edificios.filter(b=>b.hp<=0).length/batalha.total);document.getElementById('pctDestruicao').textContent=`${d}% destruído`;document.getElementById('tropasCampoResumo').textContent=`${batalha.unidades.filter(u=>u.hp>0).length} no campo`;const aguardando=batalha.reservas.reduce((a,x)=>a+x.restante,0);document.getElementById('reservaResumo').textContent=`${aguardando} aguardando`;document.getElementById('tempoBatalha').textContent=`${String(Math.floor(batalha.tempo/60)).padStart(2,'0')}:${String(Math.max(0,batalha.tempo%60)).padStart(2,'0')}`}
+function finalizarBatalha(motivo){
+ if(!batalha||batalha.encerrada)return;batalha.encerrada=true;clearInterval(loopCombate);clearInterval(timerBatalha);loopCombate=timerBatalha=null;
+ const total=Object.values(batalha.porTipo).reduce((a,b)=>a+b,0),mortos=batalha.mortos,vivos=batalha.unidades.filter(u=>u.hp>0).length,destruidos=batalha.edificios.filter(b=>b.hp<=0).length,destruicao=Math.round(destruidos/batalha.total*100),estrelas=(destruicao>=50?1:0)+(batalha.edificios[0].hp<=0?1:0)+(destruicao===100?1:0),fator=destruicao/100;
+ Object.entries(batalha.porTipo).forEach(([id,q])=>{const perdidas=batalha.perdas[id]||0;estado.tropas[id]=Math.max(0,(estado.tropas[id]||0)-perdidas)});
+ const ouro=Math.floor(batalha.alvo.ouro*fator),elixir=Math.floor(batalha.alvo.elixir*fator),cristais=estrelas===3?10:estrelas===2?5:0;estado.ouro+=ouro;estado.elixir+=elixir;estado.diamantes+=cristais;estado.batalhas++;if(estrelas)estado.vitorias++;estado.heroi=estado.heroi||{...heroiBase};estado.heroi.xp+=estrelas*24+Math.floor(destruicao/10);if(estado.heroi.xp>=estado.heroi.nivel*100){estado.heroi.xp-=estado.heroi.nivel*100;estado.heroi.nivel++}
+ const fim=motivo==='conquista'?'base destruída':motivo==='tempo'?'tempo esgotado':motivo==='retirada'?'ataque encerrado':'tropas derrotadas';estado.ultimaBatalha=`${batalha.alvo.nome}: ${destruicao}% destruído · ${estrelas} estrela(s) · ${mortos} baixa(s) · +${ouro} ouro`;
+ document.getElementById('campoBatalha').hidden=true;document.getElementById('preparacaoAtaque').hidden=false;document.getElementById('resultadoBatalha').hidden=false;document.getElementById('resultadoBatalha').innerHTML=`<p class="sobretitulo">RELATÓRIO DE CAMPO · ${batalha.alvo.nome}</p><h3>${destruicao>=50?'🏆 Vitória tática!':destruicao>0?'⚔️ Retirada estratégica':'🛡️ O rival resistiu'}</h3><div class="estrelas-resultado">${'★'.repeat(estrelas)}${'☆'.repeat(3-estrelas)}</div><h2>${destruicao}% destruído</h2><p>Resultado: ${fim}. Prédios derrubados: ${destruidos}/${batalha.total}.</p><p>Desembarcaram ${batalha.unidades.length}/${total} tropa(s): ${mortos} baixa(s), ${vivos} sobrevivente(s) em campo e ${batalha.reservas.reduce((a,x)=>a+x.restante,0)} não enviados (retornam à Companhia).</p><p>Recompensas: 🪙 ${ouro} ouro · 🧪 ${elixir} essência · 💎 ${cristais} cristais.</p><button class="botao-principal" id="novoAtaque">⚔️ ESCOLHER OUTRO RIVAL</button>`;
+ document.getElementById('novoAtaque').onclick=()=>{document.getElementById('resultadoBatalha').hidden=true;alvoSelecionado=null;selecaoAtaque={};document.getElementById('resumoAlvo').textContent='Selecione um povoado para revelar a formação inimiga.';atualizarTudo()};salvar();atualizarTudo();notificar(`Combate encerrado: ${destruicao}% destruído, ${mortos} baixa(s).`)
 }
 
 function calcularPoderTropas(quantidadeEnviada) {
